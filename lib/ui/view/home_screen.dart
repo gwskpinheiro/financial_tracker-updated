@@ -3,6 +3,7 @@ import 'package:financial_tracker/common/theme/app_theme.dart';
 import 'package:financial_tracker/common/types/date_filter_type.dart';
 import 'package:financial_tracker/domain/entity/transaction_entity.dart';
 import 'package:financial_tracker/ui/controller/home_page_controller.dart';
+import 'package:financial_tracker/ui/widget/category_summary_sheet.dart';
 import 'package:financial_tracker/ui/widget/date_filter_transactions.dart';
 import 'package:financial_tracker/ui/widget/summary_carousel.dart';
 import 'package:financial_tracker/ui/widget/transaction_sheet.dart';
@@ -35,6 +36,20 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors.surface,
         title: const Text('Controle Financeiro'),
         actions: [
+          // Botão de resumo por categoria
+          Watch((context) {
+            final transactions = ctrl.transctions.value;
+            return IconButton(
+              tooltip: 'Resumo por Categoria',
+              onPressed: () => CategorySummarySheet.show(
+                context: context,
+                transactions: transactions,
+              ),
+              icon: const Icon(Icons.bar_chart_rounded),
+            );
+          }),
+
+          // Botão recarregar
           Watch((context) {
             final running = ctrl.load.runningSignal.value;
             return IconButton(
@@ -42,15 +57,19 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: running ? null : () => ctrl.load.execute(),
               icon: running
                   ? const SizedBox(
-                      width: 18, height: 18,
+                      width: 18,
+                      height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(AppColors.textPrimary),
+                        valueColor:
+                            AlwaysStoppedAnimation(AppColors.textPrimary),
                       ),
                     )
                   : const Icon(Icons.refresh_rounded),
             );
           }),
+
+          // Botão filtro
           Watch((context) {
             final visible = ctrl.isFilterVisible.value;
             return IconButton(
@@ -98,19 +117,27 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }),
 
-          // Botões
+          // Botões adicionar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
             child: Row(
               children: [
                 Expanded(
-                  child: _addButton('Receita', Icons.add_rounded,
-                      AppColors.income, () => _openSheet(TransactionType.income)),
+                  child: _addButton(
+                    'Receita',
+                    Icons.add_rounded,
+                    AppColors.income,
+                    () => _openSheet(TransactionType.income),
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: _addButton('Despesa', Icons.remove_rounded,
-                      AppColors.expense, () => _openSheet(TransactionType.expense)),
+                  child: _addButton(
+                    'Despesa',
+                    Icons.remove_rounded,
+                    AppColors.expense,
+                    () => _openSheet(TransactionType.expense),
+                  ),
                 ),
               ],
             ),
@@ -121,23 +148,29 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(18, 0, 18, 8),
             child: Row(
               children: [
-                const Text('Transações',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary)),
+                const Text(
+                  'Transações',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const Spacer(),
                 Watch((context) {
-                  final n = ctrl.incomes.value.length + ctrl.expenses.value.length;
-                  return Text('$n registros',
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textSecondary));
+                  final n = ctrl.incomes.value.length +
+                      ctrl.expenses.value.length;
+                  return Text(
+                    '$n registros',
+                    style: const TextStyle(
+                        fontSize: 11, color: AppColors.textSecondary),
+                  );
                 }),
               ],
             ),
           ),
 
-          // Lista
+          // Lista de transações
           Expanded(
             child: Watch((context) => TransactionCardSheets(
                   incomeTransactions: ctrl.incomes.value,
@@ -153,12 +186,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _addButton(String label, IconData icon, Color color, VoidCallback onPressed) {
+  Widget _addButton(
+      String label, IconData icon, Color color, VoidCallback onPressed) {
     return ElevatedButton.icon(
       icon: Icon(icon, size: 15, color: Colors.white),
-      label: Text('Adicionar $label',
-          style: const TextStyle(
-              color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+      label: Text(
+        'Adicionar $label',
+        style: const TextStyle(
+            color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+      ),
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
